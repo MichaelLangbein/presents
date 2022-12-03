@@ -1,4 +1,5 @@
-import { AmbientLight, BoxGeometry, DepthFormat, DepthTexture, Mesh, MeshLambertMaterial, MeshPhongMaterial, OrthographicCamera, PerspectiveCamera, PlaneGeometry, Scene, ShaderMaterial, SphereGeometry, UnsignedShortType, Vector3, WebGLRenderer, WebGLRenderTarget } from 'three';
+import { AmbientLight, BoxGeometry, DepthFormat, DepthTexture, Mesh, MeshPhongMaterial, OrthographicCamera, 
+    PerspectiveCamera, PlaneGeometry, Scene, ShaderMaterial, UnsignedShortType, Vector3, WebGLRenderer, WebGLRenderTarget } from 'three';
 
 
 const canvas = document.getElementById('canvas') as HTMLCanvasElement;
@@ -30,7 +31,7 @@ faceRenderTarget.depthTexture.type = UnsignedShortType;
 faceRenderTarget.stencilBuffer = false;
 renderer.setRenderTarget(faceRenderTarget);
 
-const renderCamera = new PerspectiveCamera(50, canvas.width / canvas.height, 0.01, 5);
+const renderCamera = new PerspectiveCamera(50, canvas.width / canvas.height, 0.01, 4);
 renderCamera.position.set(0, 1.8, 3);
 renderCamera.lookAt(new Vector3(0, 0, 0));
 
@@ -116,7 +117,7 @@ const noiseRenderTarget = new WebGLRenderTarget(canvas.width, canvas.height);
 
 const rainScene = new Scene();
 
-const rainCam = new OrthographicCamera(-1, 1, 1, -1, 0.01, 100);
+const rainCam = new OrthographicCamera(-1, 1, 1, -1, 0.01, 1);
 rainScene.add(rainCam);
 rainCam.position.set(0, 0, -1);
 rainCam.lookAt(new Vector3(0, 0, 0));
@@ -128,6 +129,8 @@ const rainScreenMaterial = new ShaderMaterial({
         tNoise: { value: null },
         tDepth: { value: null },
         tLast: { value: null },
+        uRandom: { value: 0.42 },
+        uDeltaT: { value: 0.0 }
     },
     vertexShader: `
         varying vec2 vUv;
@@ -145,6 +148,8 @@ const rainScreenMaterial = new ShaderMaterial({
         uniform sampler2D tLast;
         uniform float cameraNear;
         uniform float cameraFar;
+        uniform float uDeltaT;
+        uniform float uRandom;
 
         float readDepth( sampler2D depthSampler, vec2 coord ) {
             float fragCoordZ = texture2D( depthSampler, coord ).x;
@@ -153,18 +158,57 @@ const rainScreenMaterial = new ShaderMaterial({
         }
 
         float random (vec2 st) {
-            return fract(sin(dot(st.xy,
-                                 vec2(12.9898,78.233)))*
-                43758.5453123);
+            return fract(sin(dot(st.xy, vec2(12.9898,78.233)))* 43758.5453123);
         }
 
-        void main() {
-            float noise = texture2D( tNoise, vUv ).r;
-            float depth = readDepth( tDepth, vUv );
-            float z = max(noise, depth);
+        float SPEEDFACTOR = 0.000001;
+        float FADERATE = 0.999999;
+        float SPAWNCHANCE = 0.0004;
+        vec3 particleColor = vec3(1, 1, 0);
 
-            gl_FragColor.rgb = vec3(noise);
-            gl_FragColor.a = 1.0;
+        void main() {
+
+            float delta = 0.005;
+
+            float noise      = texture2D( tNoise, vUv ).r;
+            float depth      = readDepth( tDepth, vUv );
+            float proximity  = 1.0 - depth;
+            float z          = max(noise, proximity);
+
+            float noiseUp      = texture2D( tNoise, vUv + vec2(0.0, - delta) ).r;
+            float depthUp      = readDepth( tDepth, vUv + vec2(0.0, - delta) );
+            float proximityUp  = 1.0 - depthUp;
+            float zUp          = max(noiseUp, proximityUp);
+
+            float noiseRight     = texture2D( tNoise, vUv + vec2(delta, 0.0) ).r;
+            float depthRight     = readDepth( tDepth, vUv + vec2(delta, 0.0) );
+            float proximityRight = 1.0 - depthRight;
+            float zRight         = max(noiseRight, proximityRight);
+
+            vec2 speed = vec2(
+                -(zRight - z) / delta,
+                (zUp    - z) / delta
+            );
+
+            vec2 samplePoint = vUv - speed * uDeltaT * SPEEDFACTOR;
+            samplePoint = mod(samplePoint, 1.0);  // if on edge: sampling from other side of texture
+            vec4 color = texture2D(tLast, samplePoint);
+
+            // fade out
+            color = color * FADERATE;
+
+            // making streaks disappear after a while
+            if (color.x < 0.0001) {  
+                color = vec4(0.0, 0.0, 0.0, 0.0);
+            }
+
+            // spawn new ones
+            float randVal = random(vUv * abs(sin(uRandom)) * 0.01);
+            if (randVal > (1. - SPAWNCHANCE)) {  // spawn
+                color = vec4(particleColor.xyz, 1.0);
+            }
+
+            gl_FragColor = vec4(color.xyz, 1);
         }
     `
 });
@@ -190,6 +234,7 @@ const mergeScreen = new Mesh(new PlaneGeometry(2, 2, 1, 1), new ShaderMaterial({
     uniforms: {
         tDiffuse: { value: null },
         tRain: { value: null },
+        uFraction: { value: 0.5 }
     },
     vertexShader: `
         varying vec2 vUv;
@@ -201,12 +246,13 @@ const mergeScreen = new Mesh(new PlaneGeometry(2, 2, 1, 1), new ShaderMaterial({
     fragmentShader: `
         uniform sampler2D tDiffuse;
         uniform sampler2D tRain;
+        uniform float uFraction;
+
         varying vec2 vUv;
         void main() {
             vec4 img = texture2D( tDiffuse, vUv );
             vec4 rain = texture2D( tRain, vUv );
-            gl_FragColor = 0.5 * rain + 0.5 * img;
-            // gl_FragColor = vec4(vUv.xy, 0, 1);
+            gl_FragColor = uFraction * rain + (1.0 - uFraction) * img;
         }
         `
 }));
@@ -244,12 +290,15 @@ function loop(fps: number, inMs: number) {
         rainScreen.material.uniforms.tNoise.value = noiseRenderTarget.texture;
         rainScreen.material.uniforms.tDepth.value = faceRenderTarget.depthTexture;
         rainScreen.material.uniforms.tLast.value = rainInput.texture;
+        rainScreen.material.uniforms.uRandom.value = Math.random();
+        rainScreen.material.uniforms.uDeltaT.value += (1000 / fps);
         renderer.render(rainScene, rainCam);
 
         // render to canvas
         renderer.setRenderTarget(null);
         mergeScreen.material.uniforms.tDiffuse.value = faceRenderTarget.texture;
         mergeScreen.material.uniforms.tRain.value = rainOutput.texture;
+        mergeScreen.material.uniforms.uFraction.value = 0.75;
         renderer.render(mergeScene, mergeCam);
 
         const end = new Date().getTime();
