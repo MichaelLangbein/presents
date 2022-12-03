@@ -1,6 +1,6 @@
 import { AmbientLight, BoxGeometry, DepthFormat, DepthTexture, Mesh, MeshPhongMaterial, OrthographicCamera, 
     PerspectiveCamera, PlaneGeometry, Scene, ShaderMaterial, UnsignedShortType, Vector3, WebGLRenderer, WebGLRenderTarget } from 'three';
-
+import { color, hsl, rgb } from 'd3-color';
 
 const canvas = document.getElementById('canvas') as HTMLCanvasElement;
 canvas.width = canvas.clientWidth;
@@ -130,7 +130,8 @@ const rainScreenMaterial = new ShaderMaterial({
         tDepth: { value: null },
         tLast: { value: null },
         uRandom: { value: 0.42 },
-        uDeltaT: { value: 0.0 }
+        uDeltaT: { value: 0.0 },
+        uParticleColor: { value: [1, 0, 0] }
     },
     vertexShader: `
         varying vec2 vUv;
@@ -150,6 +151,7 @@ const rainScreenMaterial = new ShaderMaterial({
         uniform float cameraFar;
         uniform float uDeltaT;
         uniform float uRandom;
+        uniform vec3 uParticleColor;
 
         float readDepth( sampler2D depthSampler, vec2 coord ) {
             float fragCoordZ = texture2D( depthSampler, coord ).x;
@@ -164,7 +166,6 @@ const rainScreenMaterial = new ShaderMaterial({
         float SPEEDFACTOR = 0.000001;
         float FADERATE = 0.999999;
         float SPAWNCHANCE = 0.0004;
-        vec3 particleColor = vec3(1, 1, 0);
 
         void main() {
 
@@ -185,10 +186,11 @@ const rainScreenMaterial = new ShaderMaterial({
             float proximityRight = 1.0 - depthRight;
             float zRight         = max(noiseRight, proximityRight);
 
-            vec2 speed = vec2(
+            vec2 slope = vec2(
                 -(zRight - z) / delta,
                 (zUp    - z) / delta
             );
+            vec2 speed = slope / length(slope) * 0.1;
 
             vec2 samplePoint = vUv - speed * uDeltaT * SPEEDFACTOR;
             samplePoint = mod(samplePoint, 1.0);  // if on edge: sampling from other side of texture
@@ -202,10 +204,19 @@ const rainScreenMaterial = new ShaderMaterial({
                 color = vec4(0.0, 0.0, 0.0, 0.0);
             }
 
+            // disappear if no movement
+            if (length(speed) < 0.001) {
+                color = vec4(0.0, 0.0, 0.0, 0.0);
+            }
+
             // spawn new ones
-            float randVal = random(vUv * abs(sin(uRandom)) * 0.01);
-            if (randVal > (1. - SPAWNCHANCE)) {  // spawn
-                color = vec4(particleColor.xyz, 1.0);
+            // ... but only if there is any speed here
+            if (length(speed) > 0.001) {
+                float randVal = random(vUv * abs(sin(uRandom)) * 0.01);
+                float distanceToCenter = length(vUv - vec2(0.5, 0.5));
+                if (randVal > (1.0 - SPAWNCHANCE)) {  // spawn
+                    color = vec4(uParticleColor.xyz, 1.0);
+                }
             }
 
             gl_FragColor = vec4(color.xyz, 1);
@@ -271,8 +282,10 @@ function loop(fps: number, inMs: number) {
         const start = new Date().getTime();
 
         // animation
-        box.rotateY(0.01);
+        box.rotateY(0.005);
         i += 1;
+        const color = hsl(i % 360, 1, 0.5).rgb();
+        const rgbcolor = [color.r / 256, color.g / 256, color.b / 256];
 
         // render scene to buffer
         renderer.setRenderTarget(faceRenderTarget);
@@ -292,13 +305,14 @@ function loop(fps: number, inMs: number) {
         rainScreen.material.uniforms.tLast.value = rainInput.texture;
         rainScreen.material.uniforms.uRandom.value = Math.random();
         rainScreen.material.uniforms.uDeltaT.value += (1000 / fps);
+        rainScreen.material.uniforms.uParticleColor.value = rgbcolor;
         renderer.render(rainScene, rainCam);
 
         // render to canvas
         renderer.setRenderTarget(null);
         mergeScreen.material.uniforms.tDiffuse.value = faceRenderTarget.texture;
         mergeScreen.material.uniforms.tRain.value = rainOutput.texture;
-        mergeScreen.material.uniforms.uFraction.value = 0.75;
+        mergeScreen.material.uniforms.uFraction.value = 0.99;
         renderer.render(mergeScene, mergeCam);
 
         const end = new Date().getTime();
