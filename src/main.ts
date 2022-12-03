@@ -23,12 +23,12 @@ if ( renderer.capabilities.isWebGL2 === false && renderer.extensions.has( 'WEBGL
 
 const renderScene = new Scene();
 
-const renderPassTarget = new WebGLRenderTarget(canvas.width, canvas.height);
-renderPassTarget.depthTexture = new DepthTexture(canvas.width, canvas.height);
-renderPassTarget.depthTexture.format = DepthFormat;
-renderPassTarget.depthTexture.type = UnsignedShortType;
-renderPassTarget.stencilBuffer = false;
-renderer.setRenderTarget(renderPassTarget);
+const faceRenderTarget = new WebGLRenderTarget(canvas.width, canvas.height);
+faceRenderTarget.depthTexture = new DepthTexture(canvas.width, canvas.height);
+faceRenderTarget.depthTexture.format = DepthFormat;
+faceRenderTarget.depthTexture.type = UnsignedShortType;
+faceRenderTarget.stencilBuffer = false;
+renderer.setRenderTarget(faceRenderTarget);
 
 const renderCamera = new PerspectiveCamera(50, canvas.width / canvas.height, 0.01, 5);
 renderCamera.position.set(0, 1.8, 3);
@@ -163,7 +163,7 @@ const rainScreenMaterial = new ShaderMaterial({
             float depth = readDepth( tDepth, vUv );
             float z = max(noise, depth);
 
-            gl_FragColor.rgb = vec3(z);
+            gl_FragColor.rgb = vec3(noise);
             gl_FragColor.a = 1.0;
         }
     `
@@ -172,6 +172,8 @@ const rainScreen = new Mesh(new PlaneGeometry(2, 2, 1, 1), rainScreenMaterial);
 rainScene.add(rainScreen);
 rainScreen.lookAt(rainCam.position);
 
+const rainRenderTarget1 = new WebGLRenderTarget(canvas.width, canvas.height);
+const rainRenderTarget2 = new WebGLRenderTarget(canvas.width, canvas.height);
 
 
 
@@ -182,9 +184,31 @@ rainScreen.lookAt(rainCam.position);
 const mergeScene = new Scene();
 const mergeCam = new OrthographicCamera(-1, 1, 1, -1, 0.01, 100);
 mergeCam.position.set(0, 0, -1);
+mergeCam.lookAt(new Vector3(0, 0, 0));
 
 const mergeScreen = new Mesh(new PlaneGeometry(2, 2, 1, 1), new ShaderMaterial({
-
+    uniforms: {
+        tDiffuse: { value: null },
+        tRain: { value: null },
+    },
+    vertexShader: `
+        varying vec2 vUv;
+        void main() {
+            vUv = uv;
+            gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+        }
+    `,
+    fragmentShader: `
+        uniform sampler2D tDiffuse;
+        uniform sampler2D tRain;
+        varying vec2 vUv;
+        void main() {
+            vec4 img = texture2D( tDiffuse, vUv );
+            vec4 rain = texture2D( tRain, vUv );
+            gl_FragColor = 0.5 * rain + 0.5 * img;
+            // gl_FragColor = vec4(vUv.xy, 0, 1);
+        }
+        `
 }));
 mergeScene.add(mergeScreen);
 mergeScreen.lookAt(mergeCam.position);
@@ -195,15 +219,17 @@ mergeScreen.lookAt(mergeCam.position);
  ************************************************************************/
 
 
+let i = 0;
 function loop(fps: number, inMs: number) {
     setTimeout(() => {
         const start = new Date().getTime();
 
         // animation
         box.rotateY(0.01);
+        i += 1;
 
         // render scene to buffer
-        renderer.setRenderTarget(renderPassTarget);
+        renderer.setRenderTarget(faceRenderTarget);
         renderer.render(renderScene, renderCamera);
 
         // render noise to buffer
@@ -211,18 +237,20 @@ function loop(fps: number, inMs: number) {
         noiseScreen.material.uniforms.utime.value += (1000 / fps);
         renderer.render(noiseScene, noiseCam);
 
-        // // render rain buffer
-        // renderer.setRenderTarget(rainPassTarget);
-        // rainScreen.material.uniforms.tNoise.value = noiseRenderTarget.texture;
-        // rainScreen.material.uniforms.tDepth.value = renderPassTarget.depthTexture;
-        // rainScreen.material.uniforms.tLast.value = rainPassTarget.texture;
-        // renderer.render(rainScene, rainCam);
+        // render rain to buffer
+        const rainInput = i % 2 === 0 ? rainRenderTarget1 : rainRenderTarget2;
+        const rainOutput = i % 2 === 0 ? rainRenderTarget2 : rainRenderTarget1;
+        renderer.setRenderTarget(rainOutput);
+        rainScreen.material.uniforms.tNoise.value = noiseRenderTarget.texture;
+        rainScreen.material.uniforms.tDepth.value = faceRenderTarget.depthTexture;
+        rainScreen.material.uniforms.tLast.value = rainInput.texture;
+        renderer.render(rainScene, rainCam);
 
         // render to canvas
         renderer.setRenderTarget(null);
-        rainScreen.material.uniforms.tNoise.value = noiseRenderTarget.texture;
-        rainScreen.material.uniforms.tDepth.value = renderPassTarget.depthTexture;
-        renderer.render(rainScene, rainCam);
+        mergeScreen.material.uniforms.tDiffuse.value = faceRenderTarget.texture;
+        mergeScreen.material.uniforms.tRain.value = rainOutput.texture;
+        renderer.render(mergeScene, mergeCam);
 
         const end = new Date().getTime();
         const delta = end - start;
