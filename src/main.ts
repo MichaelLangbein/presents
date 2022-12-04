@@ -1,11 +1,15 @@
-import { AmbientLight, BoxGeometry, DepthFormat, DepthTexture, Mesh, MeshPhongMaterial, OrthographicCamera, 
-    PerspectiveCamera, PlaneGeometry, Scene, ShaderMaterial, UnsignedShortType, Vector3, WebGLRenderer, WebGLRenderTarget } from 'three';
-import { color, hsl, rgb } from 'd3-color';
+import { AmbientLight, BoxGeometry, DepthFormat, DepthTexture, Mesh, 
+    MeshPhongMaterial, OrthographicCamera, PerspectiveCamera, 
+    PlaneGeometry, Scene, ShaderMaterial, UnsignedShortType, 
+    Vector3, WebGLRenderer, WebGLRenderTarget } from 'three';
+import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
+import { hsl } from 'd3-color';
+
+
 
 const canvas = document.getElementById('canvas') as HTMLCanvasElement;
 canvas.width = canvas.clientWidth;
 canvas.height = canvas.clientHeight;
-
 
 
 const renderer = new WebGLRenderer({
@@ -38,9 +42,14 @@ renderCamera.lookAt(new Vector3(0, 0, 0));
 const light = new AmbientLight();
 renderScene.add(light);
 
-const box = new Mesh(new BoxGeometry(2, 2, 2), new MeshPhongMaterial({ color: `rgb(125, 50, 50)` }));
-renderScene.add(box);
-
+// const box = new Mesh(new BoxGeometry(2, 2, 2), new MeshPhongMaterial({ color: `rgb(125, 50, 50)` }));
+// renderScene.add(box);
+const loader = new GLTFLoader();
+const andreas = await loader.loadAsync("/andreas.glb");
+renderScene.add(andreas.scene);
+andreas.scene.position.set(0, 0, 0);
+andreas.scene.scale.set(4, 4, 6);
+andreas.scene.lookAt(renderCamera.position);
 
 /************************************************************************
  *              Noise                                                   *
@@ -131,7 +140,7 @@ const rainScreenMaterial = new ShaderMaterial({
         tLast: { value: null },
         uRandom: { value: 0.42 },
         uDeltaT: { value: 0.0 },
-        uParticleColor: { value: [1, 0, 0] }
+        uParticleColor: { value: [1, 0, 1] }
     },
     vertexShader: `
         varying vec2 vUv;
@@ -164,8 +173,8 @@ const rainScreenMaterial = new ShaderMaterial({
         }
 
         float SPEEDFACTOR = 0.000001;
-        float FADERATE = 0.999999;
-        float SPAWNCHANCE = 0.0004;
+        float FADERATE = 0.9999999;
+        float SPAWNCHANCE = 0.0006;
 
         void main() {
 
@@ -211,7 +220,7 @@ const rainScreenMaterial = new ShaderMaterial({
 
             // spawn new ones
             // ... but only if there is any speed here
-            if (length(speed) > 0.001) {
+            if (length(speed) > 0.01) {
                 float randVal = random(vUv * abs(sin(uRandom)) * 0.01);
                 float distanceToCenter = length(vUv - vec2(0.5, 0.5));
                 if (randVal > (1.0 - SPAWNCHANCE)) {  // spawn
@@ -282,10 +291,10 @@ function loop(fps: number, inMs: number) {
         const start = new Date().getTime();
 
         // animation
-        box.rotateY(0.005);
         i += 1;
         const color = hsl(i % 360, 1, 0.5).rgb();
-        const rgbcolor = [color.r / 256, color.g / 256, color.b / 256];
+        // const rgbcolor = [color.r / 256, color.g / 256, color.b / 256];
+        const rgbcolor = [1, 1, 1]
 
         // render scene to buffer
         renderer.setRenderTarget(faceRenderTarget);
@@ -293,7 +302,7 @@ function loop(fps: number, inMs: number) {
 
         // render noise to buffer
         renderer.setRenderTarget(noiseRenderTarget);
-        noiseScreen.material.uniforms.utime.value += (1000 / fps);
+        // noiseScreen.material.uniforms.utime.value += (1000 / fps);
         renderer.render(noiseScene, noiseCam);
 
         // render rain to buffer
@@ -312,7 +321,7 @@ function loop(fps: number, inMs: number) {
         renderer.setRenderTarget(null);
         mergeScreen.material.uniforms.tDiffuse.value = faceRenderTarget.texture;
         mergeScreen.material.uniforms.tRain.value = rainOutput.texture;
-        mergeScreen.material.uniforms.uFraction.value = 0.99;
+        mergeScreen.material.uniforms.uFraction.value = 0.7;
         renderer.render(mergeScene, mergeCam);
 
         const end = new Date().getTime();
