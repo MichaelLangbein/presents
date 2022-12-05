@@ -3,6 +3,7 @@ import { AmbientLight, BoxGeometry, Color, DepthFormat, DepthTexture, Mesh,
     PlaneGeometry, Scene, ShaderMaterial, UnsignedShortType, 
     Vector3, WebGLRenderer, WebGLRenderTarget } from 'three';
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { hsl } from 'd3-color';
 
 
@@ -39,6 +40,8 @@ renderer.setRenderTarget(faceRenderTarget);
 const renderCamera = new PerspectiveCamera(50, canvas.width / canvas.height, 0.01, 4);
 renderCamera.position.set(0, 1.8, 3);
 renderCamera.lookAt(new Vector3(0, 0, 0));
+
+const controls = new OrbitControls( renderCamera, renderer.domElement );
 
 const light = new AmbientLight();
 renderScene.add(light);
@@ -143,7 +146,9 @@ const rainScreenMaterial = new ShaderMaterial({
         tLast: { value: null },
         uRandom: { value: 0.42 },
         uDeltaT: { value: 0.0 },
-        uParticleColor: { value: [1, 0, 1] }
+        uParticleColor: { value: [1, 0, 1] },
+        uDeltaX: { value: 1.0 / canvas.width },
+        uDeltaY: { value: 1.0 / canvas.height }
     },
     vertexShader: `
         varying vec2 vUv;
@@ -162,6 +167,8 @@ const rainScreenMaterial = new ShaderMaterial({
         uniform float cameraNear;
         uniform float cameraFar;
         uniform float uDeltaT;
+        uniform float uDeltaX;
+        uniform float uDeltaY;
         uniform float uRandom;
         uniform vec3 uParticleColor;
 
@@ -176,33 +183,44 @@ const rainScreenMaterial = new ShaderMaterial({
         }
 
         float SPEEDFACTOR = 0.000001;
-        float FADERATE = 0.9999999;
-        float SPAWNCHANCE = 0.0003;
+        float FADERATE = 0.999999;
+        float SPAWNCHANCE = 0.0005;
 
         void main() {
-
-            float delta = 0.005;
 
             float noise      = texture2D( tNoise, vUv ).r;
             float depth      = readDepth( tDepth, vUv );
             float proximity  = 1.0 - depth;
             float z          = max(noise, proximity);
 
-            float noiseUp      = texture2D( tNoise, vUv + vec2(0.0, - delta) ).r;
-            float depthUp      = readDepth( tDepth, vUv + vec2(0.0, - delta) );
+            float noiseUp      = texture2D( tNoise, vUv + vec2(0.0, - uDeltaY) ).r;
+            float depthUp      = readDepth( tDepth, vUv + vec2(0.0, - uDeltaY) );
             float proximityUp  = 1.0 - depthUp;
             float zUp          = max(noiseUp, proximityUp);
 
-            float noiseRight     = texture2D( tNoise, vUv + vec2(delta, 0.0) ).r;
-            float depthRight     = readDepth( tDepth, vUv + vec2(delta, 0.0) );
+            float noiseRight     = texture2D( tNoise, vUv + vec2(uDeltaX, 0.0) ).r;
+            float depthRight     = readDepth( tDepth, vUv + vec2(uDeltaX, 0.0) );
             float proximityRight = 1.0 - depthRight;
             float zRight         = max(noiseRight, proximityRight);
 
+            float noiseDown      = texture2D( tNoise, vUv + vec2(0.0, + uDeltaY) ).r;
+            float depthDown      = readDepth( tDepth, vUv + vec2(0.0, + uDeltaY) );
+            float proximityDown  = 1.0 - depthDown;
+            float zDown          = max(noiseDown, proximityDown);
+
+            float noiseLeft     = texture2D( tNoise, vUv + vec2(-uDeltaX, 0.0) ).r;
+            float depthLeft     = readDepth( tDepth, vUv + vec2(-uDeltaX, 0.0) );
+            float proximityLeft = 1.0 - depthLeft;
+            float zLeft         = max(noiseLeft, proximityLeft);
+
             vec2 slope = vec2(
-                -(zRight - z) / delta,
-                (zUp    - z) / delta
+                -(zRight - zLeft) / (2.0 * uDeltaX),
+                 (zUp    - zDown) / (2.0 * uDeltaY)
             );
-            vec2 speed = slope / length(slope) * 0.1;
+            vec2 direction = slope / length(slope);
+            vec2 speed =  (direction * 0.1);
+            // vec2 randomJitter = vec2( random(vUv * abs(sin(uRandom)) * 0.01),  random(vUv * abs(cos(uRandom)) * 0.01) );
+            // vec2 speed =  (direction * 0.1) + (randomJitter * 1.0);
 
             vec2 samplePoint = vUv - speed * uDeltaT * SPEEDFACTOR;
             samplePoint = mod(samplePoint, 1.0);  // if on edge: sampling from other side of texture
@@ -230,8 +248,8 @@ const rainScreenMaterial = new ShaderMaterial({
             // grow neighboring dot if own point doesn't yet have color
             if (length(speed) > 0.001 && color.a < 0.001) {
                 vec4 brightestNeighbor = vec4(0, 0, 0, 0);
-                for (float i = -delta; i <= delta; i += delta) {
-                    for (float j = -delta; j <= delta; j += delta) {
+                for (float i = -2.0 * uDeltaX; i <= 2.0 * uDeltaX; i += uDeltaX) {
+                    for (float j = -2.0 * uDeltaY; j <= 2.0 * uDeltaY; j += uDeltaY) {
                         vec4 spl = texture2D(tLast, vUv + vec2(i, j));
                         if (length(spl) > length(brightestNeighbor)) {
                             brightestNeighbor = spl;
@@ -309,6 +327,7 @@ function loop(fps: number, inMs: number) {
         i += 1;
         const color = hsl(i % 360, 1, 0.5).rgb();
         const rgbcolor = [color.r / 256, color.g / 256, color.b / 256];
+        controls.update();
 
         // render scene to buffer
         renderer.setRenderTarget(faceRenderTarget);
@@ -341,6 +360,7 @@ function loop(fps: number, inMs: number) {
         const end = new Date().getTime();
         const delta = end - start;
         const msLeft = (1000 / fps) - delta;
+        if (msLeft < 0.2 * (1000 / fps)) console.log(`Little time left: ${msLeft} of ${1000 / fps}`);
         loop(fps, msLeft);
     }, inMs);
 }
