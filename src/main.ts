@@ -1,4 +1,4 @@
-import { AmbientLight, BoxGeometry, Color, DepthFormat, DepthTexture, Mesh, 
+import { AmbientLight, BoxGeometry, Color, ColorKeyframeTrack, DepthFormat, DepthTexture, Mesh, 
     MeshPhongMaterial, OrthographicCamera, PerspectiveCamera, 
     PlaneGeometry, Scene, ShaderMaterial, UnsignedShortType, 
     Vector3, WebGLRenderer, WebGLRenderTarget } from 'three';
@@ -271,6 +271,54 @@ const rainRenderTarget1 = new WebGLRenderTarget(canvas.width, canvas.height);
 const rainRenderTarget2 = new WebGLRenderTarget(canvas.width, canvas.height);
 
 
+/************************************************************************
+ *              Bloom                                                   *
+ ************************************************************************/
+const bloomScene = new Scene();
+bloomScene.background = new Color(0xff0000);
+
+const bloomCam = new OrthographicCamera(-1, 1, 1, -1, 0.01, 100);
+bloomCam.position.set(0, 0, -1);
+bloomCam.lookAt(new Vector3(0, 0, 0));
+
+const bloomScreen = new Mesh(new PlaneGeometry(2, 2, 1, 1), new ShaderMaterial({
+    uniforms: {
+        tDiffuse: { value: null },
+        uDeltaX: { value: 1.0 / canvas.width },
+        uDeltaY: { value: 1.0 / canvas.height }
+    },
+    vertexShader: `
+        varying vec2 vUv;
+        void main() {
+            vUv = uv;
+            gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+        }
+    `,
+    fragmentShader: `
+        uniform sampler2D tDiffuse;
+        uniform float uDeltaX;
+        uniform float uDeltaY;
+
+        varying vec2 vUv;
+        void main() {
+
+            vec4 sum = vec4(0, 0, 0, 0);
+            for (float i = - 2.0 * uDeltaX; i <= 2.0 * uDeltaX; i += uDeltaX) {
+                for (float j = - 2.0 * uDeltaY; j <= 2.0 * uDeltaY; j += uDeltaY) {
+                    sum = sum + texture2D( tDiffuse, vUv + vec2(i, j) );
+                }
+            }
+            sum = sum / 25.0;
+
+            gl_FragColor = vec4(sum.xyz, 1.0);
+        }
+        `
+}));
+bloomScene.add(bloomScreen);
+bloomScreen.lookAt(bloomCam.position);
+
+const bloomRenderTarget = new WebGLRenderTarget(canvas.width, canvas.height);
+
 
 /************************************************************************
  *              Merging                                                 *
@@ -350,10 +398,15 @@ function loop(fps: number, inMs: number) {
         rainScreen.material.uniforms.uParticleColor.value = rgbcolor;
         renderer.render(rainScene, rainCam);
 
+        // bloom
+        renderer.setRenderTarget(bloomRenderTarget);
+        bloomScreen.material.uniforms.tDiffuse.value = rainOutput.texture;
+        renderer.render(bloomScene, bloomCam);
+
         // render to canvas
         renderer.setRenderTarget(null);
         mergeScreen.material.uniforms.tDiffuse.value = faceRenderTarget.texture;
-        mergeScreen.material.uniforms.tRain.value = rainOutput.texture;
+        mergeScreen.material.uniforms.tRain.value = bloomRenderTarget.texture;
         mergeScreen.material.uniforms.uFraction.value = 0.7;
         renderer.render(mergeScene, mergeCam);
 
