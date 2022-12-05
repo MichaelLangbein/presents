@@ -49,10 +49,10 @@ renderScene.add(light);
 // const box = new Mesh(new BoxGeometry(2, 2, 2), new MeshPhongMaterial({ color: `rgb(125, 50, 50)` }));
 // renderScene.add(box);
 const loader = new GLTFLoader();
-const andreas = await loader.loadAsync("/andreas.glb");
+const andreas = await loader.loadAsync("/helena.glb");
 renderScene.add(andreas.scene);
 andreas.scene.position.set(0, 0, 0);
-andreas.scene.scale.set(4, 4, 6);
+andreas.scene.scale.set(1, 1, 1);
 andreas.scene.lookAt(renderCamera.position);
 
 /************************************************************************
@@ -236,7 +236,7 @@ const rainScreenMaterial = new ShaderMaterial({
 
             // spawn new ones
             // ... but only if there is any speed here
-            if (length(speed) > 0.01) {
+            if (length(speed) > 0.001) {
                 float randVal = random(vUv * abs(sin(uRandom)) * 0.01);
                 float distanceToCenter = length(vUv - vec2(0.5, 0.5));
                 if (randVal > (1.0 - SPAWNCHANCE)) {  // spawn
@@ -335,7 +335,7 @@ function loop(fps: number, inMs: number) {
 
         // render noise to buffer
         renderer.setRenderTarget(noiseRenderTarget);
-        // noiseScreen.material.uniforms.utime.value += (1000 / fps);
+        noiseScreen.material.uniforms.utime.value += (1000 / fps);
         renderer.render(noiseScene, noiseCam);
 
         // render rain to buffer
