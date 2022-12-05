@@ -1,4 +1,4 @@
-import { AmbientLight, BoxGeometry, DepthFormat, DepthTexture, Mesh, 
+import { AmbientLight, BoxGeometry, Color, DepthFormat, DepthTexture, Mesh, 
     MeshPhongMaterial, OrthographicCamera, PerspectiveCamera, 
     PlaneGeometry, Scene, ShaderMaterial, UnsignedShortType, 
     Vector3, WebGLRenderer, WebGLRenderTarget } from 'three';
@@ -27,6 +27,7 @@ if ( renderer.capabilities.isWebGL2 === false && renderer.extensions.has( 'WEBGL
  ************************************************************************/
 
 const renderScene = new Scene();
+renderScene.background = new Color(0xff0000);
 
 const faceRenderTarget = new WebGLRenderTarget(canvas.width, canvas.height);
 faceRenderTarget.depthTexture = new DepthTexture(canvas.width, canvas.height);
@@ -56,6 +57,7 @@ andreas.scene.lookAt(renderCamera.position);
  ************************************************************************/
 
 const noiseScene = new Scene();
+noiseScene.background = new Color(0xff0000);
 
 // Note: could really just share that noise cam with the postCam
 const noiseCam = new OrthographicCamera(-1, 1, 1, -1, 0.01, 100);
@@ -125,6 +127,7 @@ const noiseRenderTarget = new WebGLRenderTarget(canvas.width, canvas.height);
  ************************************************************************/
 
 const rainScene = new Scene();
+rainScene.background = new Color(0xff0000);
 
 const rainCam = new OrthographicCamera(-1, 1, 1, -1, 0.01, 1);
 rainScene.add(rainCam);
@@ -174,7 +177,7 @@ const rainScreenMaterial = new ShaderMaterial({
 
         float SPEEDFACTOR = 0.000001;
         float FADERATE = 0.9999999;
-        float SPAWNCHANCE = 0.0006;
+        float SPAWNCHANCE = 0.0003;
 
         void main() {
 
@@ -208,13 +211,8 @@ const rainScreenMaterial = new ShaderMaterial({
             // fade out
             color = color * FADERATE;
 
-            // making streaks disappear after a while
-            if (color.x < 0.0001) {  
-                color = vec4(0.0, 0.0, 0.0, 0.0);
-            }
-
-            // disappear if no movement
-            if (length(speed) < 0.001) {
+            // disappear if no movement or if very faded
+            if (length(speed) < 0.001 || color.a < 0.001) {
                 color = vec4(0.0, 0.0, 0.0, 0.0);
             }
 
@@ -228,7 +226,22 @@ const rainScreenMaterial = new ShaderMaterial({
                 }
             }
 
-            gl_FragColor = vec4(color.xyz, 1);
+
+            // grow neighboring dot if own point doesn't yet have color
+            if (length(speed) > 0.001 && color.a < 0.001) {
+                vec4 brightestNeighbor = vec4(0, 0, 0, 0);
+                for (float i = -delta; i <= delta; i += delta) {
+                    for (float j = -delta; j <= delta; j += delta) {
+                        vec4 spl = texture2D(tLast, vUv + vec2(i, j));
+                        if (length(spl) > length(brightestNeighbor)) {
+                            brightestNeighbor = spl;
+                        }
+                    }
+                }
+                color = 0.99 * brightestNeighbor;
+            }
+
+            gl_FragColor = color;
         }
     `
 });
@@ -246,6 +259,8 @@ const rainRenderTarget2 = new WebGLRenderTarget(canvas.width, canvas.height);
  ************************************************************************/
 
 const mergeScene = new Scene();
+mergeScene.background = new Color(0xff0000);
+
 const mergeCam = new OrthographicCamera(-1, 1, 1, -1, 0.01, 100);
 mergeCam.position.set(0, 0, -1);
 mergeCam.lookAt(new Vector3(0, 0, 0));
@@ -293,8 +308,7 @@ function loop(fps: number, inMs: number) {
         // animation
         i += 1;
         const color = hsl(i % 360, 1, 0.5).rgb();
-        // const rgbcolor = [color.r / 256, color.g / 256, color.b / 256];
-        const rgbcolor = [1, 1, 1]
+        const rgbcolor = [color.r / 256, color.g / 256, color.b / 256];
 
         // render scene to buffer
         renderer.setRenderTarget(faceRenderTarget);
