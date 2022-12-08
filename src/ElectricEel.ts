@@ -36,7 +36,7 @@ export class ElectricEelPass extends Pass {
                 uDeltaY:        { value: 1.0 / height },
                 uFadeRate:      { value: 0.99 },
                 uSpeedFactor:   { value: 0.0005 },
-                uSpawnChance:   { value: 0.005 },
+                uSpawnChance:   { value: 0.001 },
             }, 
             vertexShader: `
                     varying vec2 vUv;
@@ -99,6 +99,7 @@ export class ElectricEelPass extends Pass {
                             (zUp    - zDown) / (2.0 * uDeltaY)
                         );
                         vec2 direction = slope / length(slope);
+                        direction += vec2(0.0, -1);
                         vec2 speed =  (direction * 0.1);
 
                         vec2 samplePoint = vUv - speed * uDeltaT * uSpeedFactor;
