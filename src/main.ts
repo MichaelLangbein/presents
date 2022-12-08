@@ -1,5 +1,5 @@
-import { AmbientLight, BoxGeometry, Color, ColorKeyframeTrack, DepthFormat, DepthTexture, Mesh, 
-    MeshPhongMaterial, OrthographicCamera, PerspectiveCamera, 
+import { AmbientLight, Color, DepthFormat, DepthTexture, Mesh, 
+    OrthographicCamera, PerspectiveCamera, 
     PlaneGeometry, Scene, ShaderMaterial, UnsignedShortType, 
     Vector3, WebGLRenderer, WebGLRenderTarget } from 'three';
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
