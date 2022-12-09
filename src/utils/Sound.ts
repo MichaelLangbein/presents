@@ -27,6 +27,7 @@ export class SoundMgmt {
     const data = await fetch(url);
     const rawData = await data.arrayBuffer();
     const decodedData = await this.ctx!.decodeAudioData(rawData);
+    // this.ctx!.sampleRate = decodedData.sampleRate;
     this.globalMusicBuffer = decodedData;
     this.rawMusicDataChannel0 = new Float32Array(decodedData.getChannelData(0));
   }
@@ -35,7 +36,7 @@ export class SoundMgmt {
     return this.musicStartTime !== undefined;
   }
 
-  play() {
+  play(onDone?: () => void) {
     if (this.isPlaying()) {
         console.warn(`Playback is already running.`);
         return;
@@ -44,7 +45,7 @@ export class SoundMgmt {
 
     this.musicSource = this.ctx!.createBufferSource();
     this.musicSource.buffer = this.globalMusicBuffer;
-    this.musicSource.playbackRate.setValueAtTime(0.5, 0);
+    this.musicSource.playbackRate.setValueAtTime(1.0, 0);
     this.musicSource.connect(this.outNode!);
     this.musicSource.start();
     this.musicStartTime = new Date().getTime();
@@ -52,6 +53,7 @@ export class SoundMgmt {
     this.musicSource.onended = () => {
       this.musicStartTime = undefined;
       this.musicSource = undefined;
+      if (onDone) onDone();
     };
   }
 
