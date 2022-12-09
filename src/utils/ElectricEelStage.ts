@@ -7,7 +7,9 @@ import { SoundMgmt } from "./Sound";
 import { Stage } from "./Stage";
 
 export class ElectricEelStage extends Stage {
-    constructor(player: SoundMgmt, canvas: HTMLCanvasElement, model: Mesh<BufferGeometry, Material>) {
+    
+    eel: ElectricEelPass;
+    constructor(private player: SoundMgmt, canvas: HTMLCanvasElement, model: Mesh<BufferGeometry, Material>) {
 
         const urls = [
             "./interstellar/interstellar_ft.jpg",
@@ -31,24 +33,29 @@ export class ElectricEelStage extends Stage {
 
         const eel = new ElectricEelPass(canvas.width, canvas.height, this.camera.near, this.camera.far);
         this.composer.addPass(eel);
-        this.composer.addPass(new UnrealBloomPass(new Vector2(2, 2), 3, 1, 0.2));
-        this.composer.addPass(new AfterimagePass());
+        this.composer.addPass(new UnrealBloomPass(new Vector2(2, 2), 0.5, 1, 0.2));
+        // this.composer.addPass(new AfterimagePass());
 
         this.scene.add(new AmbientLight());
+
+        this.eel = eel;
     }
 
     loop() {
         super.loop((i) => {
-            this.model.rotateY(0.001);
+
+            const amplitude = this.player.getCurrentAmplitude();
             const color = hsl(i % 360, 1, 0.5).rgb();
             const rgbcolor: [number, number, number] = [
                 color.r / 256,
                 color.g / 256,
                 color.b / 256,
             ];
-            // eel.setParas(rgbcolor, 1.0, 0.0005, 0.001, 0.3);
-            // eel.setParas(rgbcolor, 1.0, 0.0005, amplitude * 0.1, 0.3);
-            // eel.setParas(rgbcolor, 1.0 - amplitude, 0.00025, 0.001, 0.3);
+
+            this.model.rotateY(0.001);
+            // this.eel.setParas(rgbcolor, 1.0, 0.0005, 0.0005, 1.0);
+            // this.eel.setParas(rgbcolor, 1.0, 0.0005, amplitude * 0.1, 0.3);
+            this.eel.setParas(rgbcolor, 1.0 - amplitude, 0.00025, 0.0005, 0.7);
         })
     }
 }
