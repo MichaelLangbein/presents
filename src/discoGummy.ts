@@ -7,54 +7,30 @@ import { RenderPass } from "three/examples/jsm/postprocessing/RenderPass";
 import { UnrealBloomPass } from "three/examples/jsm/postprocessing/UnrealBloomPass";
 // import { HalftonePass } from 'three/examples/jsm/postprocessing/HalftonePass';
 import './style.css';
+import { SoundMgmt } from "./utils/Sound";
 
 
-
-let globalMusicBufferData: Float32Array | undefined = undefined;
-let musicStartTime: number;
-function audio() {
-  const humanHearingMaxRate = 20_000; // Hz
-  const sampleRate = 2 * humanHearingMaxRate; // because signal reconstruction
-
-  // overall context
-  const ctx = new AudioContext({ sampleRate });
-
-  // global volume control
-  const gainNode = ctx.createGain();
-  const gainValue = 0.05;
-  const validFrom = 0;
-  gainNode.gain.setValueAtTime(gainValue, validFrom);
-  gainNode.connect(ctx.destination);
-
-  const url =
-    "https://michaellangbein.github.io/presents//documentary-technology.mp3";
-  let musicBuffer: AudioBuffer;
-  fetch(url).then((data) => {
-    data.arrayBuffer().then((rawData) => {
-      ctx.decodeAudioData(rawData).then((decoded) => {
-        musicBuffer = decoded;
-        console.log("music data downloaded");
-        globalMusicBufferData = new Float32Array(musicBuffer.getChannelData(0));
-      });
-    });
-  });
-
+async function audio() {
+  const player = new SoundMgmt();
+  await player.loadFromUrl("./penguinmusic.mp3"); // https://michaellangbein.github.io/presents
   const playButton = document.getElementById("playMusic") as HTMLButtonElement;
   playButton.addEventListener("click", () => {
-    const musicSource = ctx.createBufferSource();
-    musicSource.buffer = musicBuffer;
-    musicSource.playbackRate.setValueAtTime(0.5, 0);
-
-    musicSource.connect(gainNode);
-    musicSource.start();
-    musicStartTime = new Date().getTime();
+    if (player.isPlaying()) {
+      player.stop();
+      playButton.innerHTML = "Play music";
+    } else {
+      player.play();
+      playButton.innerHTML = "Stop music";
+    }
   });
+  return player;
 }
 
-audio();
+
 
 async function main() {
   const canvas = document.getElementById("canvas") as HTMLCanvasElement;
+  const player = await audio();
 
   const scene = new Scene();
 
@@ -140,11 +116,7 @@ async function main() {
 
 
       i += 1;
-      let amplitude = 0;
-      if (globalMusicBufferData && musicStartTime) {
-        const timeInSongMs = start - musicStartTime;
-        amplitude = globalMusicBufferData[20 * timeInSongMs];
-      }
+      const amplitude = player.getCurrentAmplitude();
     //   bloom.strength = amplitude * 0.1;
       model2.material.refractionRatio = amplitude * 0.1;
     //   model2.material.color = new Color(hsl(amplitude * 36, 0.5, 0.5).formatHex());
