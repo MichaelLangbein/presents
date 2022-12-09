@@ -11,7 +11,7 @@ import { UnrealBloomPass } from "three/examples/jsm/postprocessing/UnrealBloomPa
 import { RenderPixelatedPass } from "three/examples/jsm/postprocessing/RenderPixelatedPass.js";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
-import { ElectricEelPass } from "./ElectricEel";
+import { ElectricEelPass } from "./utils/ElectricEel";
 import { hsl } from "d3-color";
 import "./style.css";
 
