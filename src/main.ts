@@ -5,6 +5,7 @@ import { ElectricEelStage } from "./utils/ElectricEelStage";
 import { SoundMgmt } from "./utils/Sound";
 import "./style.css";
 import { PixelStage } from "./utils/PixelStage";
+import { GodRayStage } from "./utils/GodRayStage";
 
 async function audio() {
   const player = new SoundMgmt();
@@ -34,7 +35,7 @@ async function main() {
   const model = group.scene.children[9] as Mesh<BufferGeometry, Material>;
   console.log(group.scene)
 
-  const stage = new PixelStage(player, canvas, model);
+  const stage = new GodRayStage(player, canvas, model);
 
   stage.loop();
 }

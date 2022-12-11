@@ -12,6 +12,7 @@ export class Stage {
     model: Mesh<BufferGeometry, Material>;
     scene: Scene;
     camera: PerspectiveCamera;
+    renderer: WebGLRenderer;
     
     constructor(canvas: HTMLCanvasElement, model: Mesh<BufferGeometry, Material>, backgroundImageUrls: string[]) {
         const scene = new Scene();
@@ -41,6 +42,7 @@ export class Stage {
         this.camera = camera;
         this.controls = controls;
         this.composer = composer;
+        this.renderer = renderer;
         this.model = model;
     }
 
