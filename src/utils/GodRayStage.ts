@@ -1,7 +1,5 @@
-import { BufferGeometry, Material, Mesh, PCFSoftShadowMap, PointLight, Vector3 } from "three";
+import { BufferGeometry, Color, Material, Mesh, MeshStandardMaterial, PCFSoftShadowMap, PlaneGeometry, PointLight, Vector3 } from "three";
 import { GodraysPass } from "three-good-godrays";
-import { EffectComposer } from "three/examples/jsm/postprocessing/EffectComposer";
-import { RenderPass } from "three/examples/jsm/postprocessing/RenderPass";
 import { SoundMgmt } from "./Sound";
 import { Stage } from "./Stage";
 
@@ -23,9 +21,15 @@ export class GodRayStage extends Stage {
         model.castShadow = true;
         model.receiveShadow = true;
 
+        const ground = new Mesh(new PlaneGeometry(2, 2, 1, 1), new MeshStandardMaterial());
+        ground.receiveShadow = true;
+        this.scene.add(ground);
+        ground.position.set(0, -0.5, 0);
+        ground.lookAt(new Vector3(0, 0, 0));
+
         // godrays can be cast from either `PointLight`s or `DirectionalLight`s
-        const lightPos = new Vector3(0, 20, 0);
-        const pointLight = new PointLight(0xffffff, 1, 10000);
+        const lightPos = new Vector3(0, 1, -2);
+        const pointLight = new PointLight(new Color(`rgb(125, 10, 125)`), 1, 10000);
         pointLight.castShadow = true;
         pointLight.shadow.mapSize.width = 1024;
         pointLight.shadow.mapSize.height = 1024;
@@ -37,8 +41,16 @@ export class GodRayStage extends Stage {
         this.scene.add(pointLight);
 
         // set up rendering pipeline and add godrays pass at the end
-        const godraysPass = new GodraysPass(pointLight, this.camera);
+        const godraysPass = new GodraysPass(pointLight, this.camera, {
+            raymarchSteps: 60,
+            maxDensity: 0.5,
+            blur: true,
+            color: new Color(`rgb(125, 10, 125)`),
+            density: 3 / 128,
+            distanceAttenuation: 2,
+        });
         // If this is the last pass in your pipeline, set `renderToScreen` to `true`
+        godraysPass.renderToScreen = true;
         this.composer.addPass(godraysPass as any);
     }
 }
