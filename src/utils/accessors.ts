@@ -17,7 +17,8 @@ export async function loadModel(
   switch (name) {
     case "Andreas":
       const ga = await loader.loadAsync(`${base}/models/andreas.glb`);
-      const ma = ga.scene.children[9] as Mesh<BufferGeometry, Material>;
+      // @ts-ignore
+      const ma = ga.scene as Mesh<BufferGeometry, Material>;
       return ma;
     case "Helena":
       const gh = await loader.loadAsync(`${base}/models/helena.glb`);
