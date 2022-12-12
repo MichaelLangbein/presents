@@ -1,5 +1,5 @@
-import { BufferGeometry, Color, Material, Mesh, MeshBasicMaterial, MeshDepthMaterial, MeshStandardMaterial, OrthographicCamera, PCFSoftShadowMap, PlaneGeometry, PointLight, Scene, ShaderMaterial, Vector3, Vector4, WebGLRenderTarget } from "three";
-import { SoundMgmt } from "./Sound";
+import { BufferGeometry, Material, Mesh, OrthographicCamera, PlaneGeometry, Scene, ShaderMaterial, Vector3, Vector4, WebGLRenderTarget } from "three";
+import { SoundMgmt } from "../utils/Sound";
 import { Stage } from "./Stage";
 import { GodRaysFakeSunShader, GodRaysDepthMaskShader, GodRaysCombineShader, GodRaysGenerateShader 
 } from 'three/examples/jsm/shaders/GodRaysShader';
@@ -31,8 +31,8 @@ export class GodRayStage extends Stage {
 
 
       // depth
-      const materialDepth = new MeshDepthMaterial();
-      const materialScene = new MeshBasicMaterial({color: 0x000000});
+    //   const materialDepth = new MeshDepthMaterial();
+    //   const materialScene = new MeshBasicMaterial({color: 0x000000});
 
       // 
       const scene = new Scene();

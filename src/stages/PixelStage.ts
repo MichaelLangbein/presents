@@ -1,4 +1,4 @@
-import { AmbientLight, BufferGeometry, Color, CustomBlending, DirectionalLight, Material, MaxEquation, Mesh, PlaneGeometry, ShaderMaterial, SrcAlphaSaturateFactor, SrcColorFactor, Vector2, Vector3 } from "three";
+import { AmbientLight, BufferGeometry, Color, CustomBlending, DirectionalLight, Material, MaxEquation, Mesh, PlaneGeometry, ShaderMaterial, SrcAlphaSaturateFactor, SrcColorFactor, Vector2 } from "three";
 import { UnrealBloomPass } from "three/examples/jsm/postprocessing/UnrealBloomPass";
 // @ts-ignore
 import { RenderPixelatedPass } from 'three/examples/jsm/postprocessing/RenderPixelatedPass.js';

@@ -6,6 +6,7 @@ import { ProjectionStage } from "./stages/ProjectionStage";
 import { Stage } from "./stages/Stage";
 import "./style.css";
 import { ElectricEelStage } from "./stages/ElectricEelStage";
+import { CartoonStage } from "./stages/CartoonStage";
 
 
 const params = new URLSearchParams(window.location.search);
@@ -61,7 +62,11 @@ async function main() {
       stage = new PixelStage(player, canvas, model, backgroundTextures);
   }
   else {
-      throw Error(`Unknown setup: ${name}`);
+      // throw Error(`Unknown setup: ${name}`);
+      const player = await audio(getSong('lifelike'));
+      const model = await loadModel('Luis');
+      const backgroundTextures = getTextures('polluted');
+      stage = new CartoonStage(player, canvas, model, backgroundTextures);
   }
 
 

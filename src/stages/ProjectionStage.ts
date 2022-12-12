@@ -1,6 +1,6 @@
 import { Mesh, BufferGeometry, Material, PCFSoftShadowMap,
     sRGBEncoding, ACESFilmicToneMapping, HemisphereLight,
-    TextureLoader, LinearFilter, SpotLight, MeshLambertMaterial, PlaneGeometry, SpotLightHelper } from "three";
+    TextureLoader, LinearFilter, SpotLight, MeshLambertMaterial, PlaneGeometry } from "three";
 import { getBase } from "../utils/accessors";
 import { SoundMgmt } from "../utils/Sound";
 import { Stage } from "./Stage";
@@ -62,12 +62,20 @@ export class ProjectionStage extends Stage {
     }
 
     loop(onLoop?: ((i: number) => void) | undefined): void {
+        const n = 300;
+        const data = Array(n).map(v => 0);
+        let meanAmplitude = 0.0;
         super.loop((i) => {
             
             const amplitude = this.sound.getCurrentAmplitude();
+            if (amplitude) {
+                data.push(Math.abs(amplitude));
+                data.shift();
+                meanAmplitude = data.reduce((v, c) => c + v, 0) / n;
+            }
 
             const speed = 0.4;
-            const radius = 5;
+            const radius = 5 * ( 1.0 - meanAmplitude);
             const theta = - speed * i % 360;
             const xNew = radius * Math.sin((theta * 2.0 * Math.PI) / 360);
             const zNew = radius * Math.cos((theta * 2.0 * Math.PI) / 360);
