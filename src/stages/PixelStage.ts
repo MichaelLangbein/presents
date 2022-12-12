@@ -153,7 +153,6 @@ export class PixelStage extends Stage {
             this.light.lookAt(this.model.position);
             this.light.color.set(new Color(color.formatHex()));
             this.light.intensity = amplitude;
-            this.model.rotateY(0.001);
         });
     }
 }

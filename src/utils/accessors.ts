@@ -50,68 +50,82 @@ export function getTextures(
   const base = getBase();
   switch (name) {
     case "interstellar":
-      return [
+      return { 
+        source: 'https://opengameart.org/content/interstellar-skybox-png',
+        textures: [
         `${base}/textures/interstellar/interstellar_ft.jpg`,
         `${base}/textures/interstellar/interstellar_bk.jpg`,
         `${base}/textures/interstellar/interstellar_up.jpg`,
         `${base}/textures/interstellar/interstellar_dn.jpg`,
         `${base}/textures/interstellar/interstellar_rt.jpg`,
         `${base}/textures/interstellar/interstellar_lt.jpg`,
-      ];
+      ]};
     case "brown_clouds":
-      return [
+      return { 
+        source: 'https://opengameart.org/content/cloudy-skyboxes',
+        textures: [
         `${base}/textures/brown_clouds/browncloud_ft.jpg`,
         `${base}/textures/brown_clouds/browncloud_bk.jpg`,
         `${base}/textures/brown_clouds/browncloud_up.jpg`,
         `${base}/textures/brown_clouds/browncloud_dn.jpg`,
         `${base}/textures/brown_clouds/browncloud_rt.jpg`,
         `${base}/textures/brown_clouds/browncloud_lf.jpg`,
-      ];
+      ]};
     case "blue_clouds":
-      return [
+      return { 
+        source: 'https://opengameart.org/content/cloudy-skyboxes',
+        textures: [
         `${base}/textures/blue_clouds/bluecloud_ft.jpg`,
         `${base}/textures/blue_clouds/bluecloud_bk.jpg`,
         `${base}/textures/blue_clouds/bluecloud_up.jpg`,
         `${base}/textures/blue_clouds/bluecloud_dn.jpg`,
         `${base}/textures/blue_clouds/bluecloud_rt.jpg`,
         `${base}/textures/blue_clouds/bluecloud_lf.jpg`,
-      ];
+      ]};
     case "asteroids":
-      return [
+      return { 
+        source: 'https://opengameart.org/content/xonotic-skyboxes',
+        textures: [
         `${base}/textures/asteroids/asteroids_ft.jpg`,
         `${base}/textures/asteroids/asteroids_bk.jpg`,
         `${base}/textures/asteroids/asteroids_up.jpg`,
         `${base}/textures/asteroids/asteroids_dn.jpg`,
         `${base}/textures/asteroids/asteroids_rt.jpg`,
         `${base}/textures/asteroids/asteroids_lf.jpg`,
-      ];
+      ]};
     case "nebulae":
-      return [
+      return { 
+        source: 'https://opengameart.org/content/xonotic-skyboxes',
+        textures: [
         `${base}/textures/nebulae/nebulae_ft.jpg`,
         `${base}/textures/nebulae/nebulae_bk.jpg`,
         `${base}/textures/nebulae/nebulae_up.jpg`,
         `${base}/textures/nebulae/nebulae_dn.jpg`,
         `${base}/textures/nebulae/nebulae_rt.jpg`,
         `${base}/textures/nebulae/nebulae_lf.jpg`,
-      ];
+      ]};
     case "polluted":
-      return [
+      return { 
+        source: 'https://opengameart.org/content/xonotic-skyboxes',
+        textures: [
         `${base}/textures/polluted/polluted_earth_ft.jpg`,
         `${base}/textures/polluted/polluted_earth_bk.jpg`,
         `${base}/textures/polluted/polluted_earth_up.jpg`,
         `${base}/textures/polluted/polluted_earth_dn.jpg`,
         `${base}/textures/polluted/polluted_earth_rt.jpg`,
         `${base}/textures/polluted/polluted_earth_lf.jpg`,
-      ];
+      ]};
     case "sunset":
-      return [
+      return { 
+        source: 'https://opengameart.org/content/xonotic-skyboxes',
+        textures: [
         `${base}/textures/sunset/sunset_ft.jpg`,
         `${base}/textures/sunset/sunset_bk.jpg`,
         `${base}/textures/sunset/sunset_up.jpg`,
         `${base}/textures/sunset/sunset_dn.jpg`,
         `${base}/textures/sunset/sunset_rt.jpg`,
         `${base}/textures/sunset/sunset_lf.jpg`,
-      ];
+      ]};
     default:
       throw new Error(`Unknown textures: ${name}`);
   }
@@ -123,17 +137,35 @@ export function getSong(
   const base = getBase();
   switch (name) {
     case "docu":
-      return `${base}/audio/documentary-technology.mp3`;
+      return {
+        source: 'https://pixabay.com/music/ambient-documentary-11052/',
+        local: `${base}/audio/documentary-technology.mp3`
+      };
     case "penguin":
-      return `${base}/audio/penguinmusic.mp3`;
+      return {
+        source: 'https://pixabay.com/music/upbeat-penguinmusic-modern-chillout-future-calm-12641/',
+        local: `${base}/audio/penguinmusic.mp3`
+      };
     case "lofi":
-      return `${base}/audio/lofi-study.mp3`;
+      return {
+        source: 'https://pixabay.com/music/beats-lofi-study-112191/',
+        local: `${base}/audio/lofi-study.mp3`
+      };
     case "lifelike":
-      return `${base}/audio/lifelike.mp3`;
+      return {
+        source: 'https://pixabay.com/music/future-bass-lifelike-126735/',
+        local: `${base}/audio/lifelike.mp3`
+      };
     case "tech":
-      return `${base}/audio/documentary-11052.mp3`;
+      return {
+        source: 'https://pixabay.com/music/beautiful-plays-documentary-technology-124111/',
+        local: `${base}/audio/documentary-11052.mp3`
+      };
     case "space":
-      return `${base}/audio/space-age-10714.mp3`;
+      return {
+        source: 'https://pixabay.com/music/beats-space-age-10714/',
+        local: `${base}/audio/space-age-10714.mp3`
+      };
     default:
       throw new Error(`Unknown song: ${name}`);
   }

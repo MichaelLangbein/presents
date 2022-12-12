@@ -43,7 +43,7 @@ export class DiscoGummyStage extends Stage {
     model2.lookAt(this.camera.position);
 
     const background = new Mesh(
-      new PlaneGeometry(30, 30, 2, 2),
+      new PlaneGeometry(45, 45, 2, 2),
       new ShaderMaterial({
         uniforms: {
           uTime: { value: Math.random() },
@@ -179,13 +179,7 @@ export class DiscoGummyStage extends Stage {
 
       this.background.material.uniforms.uTime.value = 0.0001 * i * (1000 / 30);
 
-      this.model.rotateY(0.001);
       this.model2.rotateY(0.001);
-
-      const theta = i % 360;
-      const xNew = 3 * Math.sin((theta * 2.0 * Math.PI) / 360);
-      const yNew = 3 * Math.cos((theta * 2.0 * Math.PI) / 360);
-      this.pointLight.position.set(xNew, yNew, 0);
     });
   }
 }

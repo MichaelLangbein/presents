@@ -14,7 +14,7 @@ export class Stage {
     camera: PerspectiveCamera;
     renderer: WebGLRenderer;
     
-    constructor(canvas: HTMLCanvasElement, model: Mesh<BufferGeometry, Material>, backgroundImageUrls: string[]) {
+    constructor(canvas: HTMLCanvasElement, model: Mesh<BufferGeometry, Material>, backgroundImageUrls: string[], public defaultRotation = true) {
         const scene = new Scene();
 
         const camera = new PerspectiveCamera( 45, canvas.width / canvas.height, 0.01, 100);
@@ -55,9 +55,22 @@ export class Stage {
 
             i += 1;
             if (onLoop) onLoop(i);
+
+            if (this.defaultRotation) {
+              this.model.rotateY(0.001);
+              const speed = -0.1;
+              const radius = this.camera.position.length();
+              const thetaPrev = (speed * (i-1) % 360) * 2 * Math.PI / 360;
+              const theta = (speed * i % 360) * 2 * Math.PI / 360;
+              const deltax = radius * Math.sin(theta) - radius * Math.sin(thetaPrev);
+              const deltaz = radius * Math.cos(theta) - radius * Math.cos(thetaPrev);
+              this.camera.position.add(new Vector3(deltax, 0, deltaz));
+              this.camera.lookAt(this.model.position);
+            }
+
             this.controls.update();
             this.composer.render();
-      
+
 
             const end = new Date().getTime();
             const delta = end - start;

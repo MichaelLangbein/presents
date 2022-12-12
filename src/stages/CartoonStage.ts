@@ -57,7 +57,6 @@ export class CartoonStage extends Stage {
         this.light.position.set(xNew, 3, zNew);
         const dotRadius = (meanAmplitude / 0.5) * 25 + 1;
         (this.halftonePass.uniforms as any)['radius'].value = dotRadius;
-        console.log(dotRadius)
 
     });
   }

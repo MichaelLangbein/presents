@@ -52,7 +52,7 @@ export class ProjectionStage extends Stage {
         spotLight.shadow.focus = 1;
         this.scene.add(spotLight);
 
-        const ground = new Mesh(new PlaneGeometry(1000, 1000), new MeshLambertMaterial({ color: 0x808080 }));
+        const ground = new Mesh(new PlaneGeometry(10, 10), new MeshLambertMaterial({ color: 0x808080 }));
         ground.position.set( 0, -2, 0 );
         ground.rotation.x = - Math.PI / 2;
         ground.receiveShadow = true;
@@ -79,8 +79,6 @@ export class ProjectionStage extends Stage {
             const theta = - speed * i % 360;
             const xNew = radius * Math.sin((theta * 2.0 * Math.PI) / 360);
             const zNew = radius * Math.cos((theta * 2.0 * Math.PI) / 360);
-
-            this.model.rotateY(0.001);
 
             this.spotlight.position.setX(xNew);
             this.spotlight.position.setZ(zNew);

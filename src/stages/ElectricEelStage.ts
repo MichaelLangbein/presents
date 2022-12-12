@@ -43,7 +43,6 @@ export class ElectricEelStage extends Stage {
                 color.b / 256,
             ];
 
-            this.model.rotateY(0.001);
             // this.eel.setParas(rgbcolor, 1.0, 0.0005, 0.0005, 1.0);
             // this.eel.setParas(rgbcolor, 1.0, 0.0005, amplitude * 0.1, 0.3);
             // this.eel.setParas(rgbcolor, 1.0 - amplitude, 0.00025, 0.0005, 0.7);
