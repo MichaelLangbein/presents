@@ -16,7 +16,6 @@
   },
   "dependencies": {
     "d3-color": "^3.1.0",
-    "three": "^0.147.0",
-    "three-good-godrays": "^0.4.1"
+    "three": "^0.147.0"
   }
 }

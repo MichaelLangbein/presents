@@ -1,15 +1,18 @@
-import { Mesh, BufferGeometry, Material } from "three";
-import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
-import { DiscoGummyStage } from "./utils/DiscoGummyStage";
-import { ElectricEelStage } from "./utils/ElectricEelStage";
 import { SoundMgmt } from "./utils/Sound";
 import "./style.css";
-import { PixelStage } from "./utils/PixelStage";
-import { GodRayStage } from "./utils/GodRayStage";
+import { DiscoGummyStage } from "./stages/DiscoGummyStage";
+import { ElectricEelStage } from "./stages/ElectricEelStage";
+import { PixelStage } from "./stages/PixelStage";
+import { GodRayStage } from "./stages/GodRayStage";
+import { getSong, loadModel, getTextures } from "./utils/accessors";
+import { ProjectionStage } from "./stages/ProjectionStage";
 
-async function audio() {
+
+
+
+async function audio(songUrl: string) {
   const player = new SoundMgmt();
-  await player.loadFromUrl("./penguinmusic.mp3"); // https://michaellangbein.github.io/presents
+  await player.loadFromUrl(songUrl);
   const playButton = document.getElementById("playMusic") as HTMLButtonElement;
   playButton.addEventListener("click", () => {
     if (player.isPlaying()) {
@@ -28,14 +31,11 @@ async function main() {
   canvas.width = canvas.clientWidth;
   canvas.height = canvas.clientHeight;
 
-  const player = await audio();
+  const player = await audio(getSong('space'));
+  const model = await loadModel('Helena');
+  const backgroundTextures = getTextures('nebulae');
 
-  const loader = new GLTFLoader();
-  const group = await loader.loadAsync("https://michaellangbein.github.io/presents/andreas.glb");
-  const model = group.scene.children[9] as Mesh<BufferGeometry, Material>;
-  console.log(group.scene)
-
-  const stage = new GodRayStage(player, canvas, model);
+  const stage = new ProjectionStage(player, canvas, model, backgroundTextures);
 
   stage.loop();
 }

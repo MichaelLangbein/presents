@@ -3,6 +3,7 @@ import { BufferGeometry, Camera, Color, Mesh, OrthographicCamera, PlaneGeometry,
 
 export class ElectricEelPass extends Pass {
 
+    private scaleFactor = 5;
     private i = 0;
     private scene: Scene;
     private camera: Camera;
@@ -15,6 +16,8 @@ export class ElectricEelPass extends Pass {
 
     constructor(width: number, height: number, cameraNear: number = 0.01, cameraFar: number = 100) {
         super();
+        const w = width / this.scaleFactor;
+        const h = height / this.scaleFactor;
         
         this.scene = new Scene();
         this.scene.background = new Color('#000');
@@ -32,8 +35,8 @@ export class ElectricEelPass extends Pass {
                 uRandom:        { value: 0.42 },
                 uDeltaT:        { value: (1000 / 30) },
                 uParticleColor: { value: [1, 0, 1] },
-                uDeltaX:        { value: 1.0 / width },
-                uDeltaY:        { value: 1.0 / height },
+                uDeltaX:        { value: 1.0 / w },
+                uDeltaY:        { value: 1.0 / h },
                 uFadeRate:      { value: 0.99 },
                 uSpeedFactor:   { value: 0.0005 },
                 uSpawnChance:   { value: 0.001 },
@@ -99,7 +102,7 @@ export class ElectricEelPass extends Pass {
                             (zUp    - zDown) / (2.0 * uDeltaY)
                         );
                         vec2 direction = slope / length(slope);
-                        direction += vec2(0.0, -1);
+                        // direction += vec2(0.0, -1);
                         vec2 speed =  (direction * 0.1);
 
                         vec2 samplePoint = vUv - speed * uDeltaT * uSpeedFactor;
@@ -147,8 +150,8 @@ export class ElectricEelPass extends Pass {
         this.screen.lookAt(this.camera.position);
         this.scene.add(this.screen);
 
-        this.rainRenderTarget1 = new WebGLRenderTarget(width, height);
-        this.rainRenderTarget2 = new WebGLRenderTarget(width, height);
+        this.rainRenderTarget1 = new WebGLRenderTarget(w, h);
+        this.rainRenderTarget2 = new WebGLRenderTarget(w, h);
 
 
 
@@ -188,8 +191,8 @@ export class ElectricEelPass extends Pass {
         this.screen.material.uniforms.uDeltaX.value = 1.0 / width;
         this.screen.material.uniforms.uDeltaY.value = 1.0 / height;
 
-        this.rainRenderTarget1 = new WebGLRenderTarget(width, height);
-        this.rainRenderTarget2 = new WebGLRenderTarget(width, height);
+        this.rainRenderTarget1 = new WebGLRenderTarget(width / this.scaleFactor, height / this.scaleFactor);
+        this.rainRenderTarget2 = new WebGLRenderTarget(width / this.scaleFactor, height / this.scaleFactor);
     }
 
     setParas(rgbcolor: [number, number, number], fadeRate = 0.99, speedFactor = 0.0005, spawnChance = 0.005, mixRate = 0.5) {
