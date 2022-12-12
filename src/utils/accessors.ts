@@ -95,12 +95,12 @@ export function getTextures(
       ];
     case "polluted":
       return [
-        `${base}/textures/polluted/polluted_ft.jpg`,
-        `${base}/textures/polluted/polluted_bk.jpg`,
-        `${base}/textures/polluted/polluted_up.jpg`,
-        `${base}/textures/polluted/polluted_dn.jpg`,
-        `${base}/textures/polluted/polluted_rt.jpg`,
-        `${base}/textures/polluted/polluted_lf.jpg`,
+        `${base}/textures/polluted/polluted_earth_ft.jpg`,
+        `${base}/textures/polluted/polluted_earth_bk.jpg`,
+        `${base}/textures/polluted/polluted_earth_up.jpg`,
+        `${base}/textures/polluted/polluted_earth_dn.jpg`,
+        `${base}/textures/polluted/polluted_earth_rt.jpg`,
+        `${base}/textures/polluted/polluted_earth_lf.jpg`,
       ];
     case "sunset":
       return [

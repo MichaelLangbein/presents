@@ -1,9 +1,8 @@
 import { hsl } from "d3-color";
 import { AmbientLight, BufferGeometry, DepthFormat, DepthTexture, Material, Mesh, UnsignedShortType, Vector2 } from "three";
-import { AfterimagePass } from "three/examples/jsm/postprocessing/AfterimagePass";
 import { UnrealBloomPass } from "three/examples/jsm/postprocessing/UnrealBloomPass";
-import { ElectricEelPass } from "./ElectricEel";
-import { SoundMgmt } from "./Sound";
+import { ElectricEelPass } from "../utils/ElectricEel";
+import { SoundMgmt } from "../utils/Sound";
 import { Stage } from "./Stage";
 
 export class ElectricEelStage extends Stage {
