@@ -18,7 +18,7 @@ export async function loadModel(
     case "Andreas":
       const ga = await loader.loadAsync(`${base}/models/andreas.glb`);
       // @ts-ignore
-      const ma = ga.scene as Mesh<BufferGeometry, Material>;
+      const ma = ga.scene;
       return ma;
     case "Helena":
       const gh = await loader.loadAsync(`${base}/models/helena.glb`);
@@ -26,7 +26,8 @@ export async function loadModel(
       return mh;
     case "Sabine":
       const gs = await loader.loadAsync(`${base}/models/sabine.glb`);
-      const ms = gs.scene.children[0] as Mesh<BufferGeometry, Material>;
+      // @ts-ignore
+      const ms = gs.scene;
       return ms;
     case "Luis":
       const gl = await loader.loadAsync(`${base}/models/luis.glb`);

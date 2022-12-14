@@ -19,7 +19,7 @@ export class Stage {
 
         const camera = new PerspectiveCamera( 45, canvas.width / canvas.height, 0.01, 100);
         scene.add(camera);
-        camera.position.set(0, 1, 4);
+        camera.position.set(-4, 1, 0);
         camera.lookAt(new Vector3(0, 0, 0));
 
         const renderer = new WebGLRenderer({ canvas: canvas, alpha: true, antialias: true, depth: true });
@@ -36,7 +36,7 @@ export class Stage {
         scene.add(model);
         model.position.set(0, 0, 0);
         model.scale.set(1, 1, 1);
-        model.lookAt(camera.position);
+        model.lookAt(new Vector3(0, 0, -1));
 
         this.scene = scene;
         this.camera = camera;
@@ -58,13 +58,7 @@ export class Stage {
 
             if (this.defaultRotation) {
               this.model.rotateY(0.001);
-              const speed = -0.1;
-              const radius = this.camera.position.length();
-              const thetaPrev = (speed * (i-1) % 360) * 2 * Math.PI / 360;
-              const theta = (speed * i % 360) * 2 * Math.PI / 360;
-              const deltax = radius * Math.sin(theta) - radius * Math.sin(thetaPrev);
-              const deltaz = radius * Math.cos(theta) - radius * Math.cos(thetaPrev);
-              this.camera.position.add(new Vector3(deltax, 0, deltaz));
+              this.scene.rotateY(-0.001);
               this.camera.lookAt(this.model.position);
             }
 
