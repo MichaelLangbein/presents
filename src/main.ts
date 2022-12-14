@@ -34,6 +34,8 @@ async function main() {
   canvas.width = canvas.clientWidth;
   canvas.height = canvas.clientHeight;
 
+  const freezeButton = document.getElementById("freeze") as HTMLButtonElement;
+
   let stage: Stage;
 
   if (name === 'Andreas') {
@@ -80,6 +82,11 @@ async function main() {
 
 
   stage.loop();
+  freezeButton.addEventListener('click', () => {
+    stage.defaultRotation = !stage.defaultRotation;
+    if (stage.defaultRotation) freezeButton.innerHTML = 'Freeze';
+    if (!stage.defaultRotation) freezeButton.innerHTML = 'Rotate';
+  });
 }
 
 main();
