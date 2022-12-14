@@ -39,7 +39,7 @@ async function main() {
   if (name === 'Andreas') {
       const { local, source } = getSong('space');
       const player = await audio(local);
-      const model = await loadModel('Andreas');
+      const model = await loadModel('Andreas') as any;
       const { source: textureSource, textures: backgroundTextures} = getTextures('nebulae');
       stage = new ElectricEelStage(player, canvas, model, backgroundTextures);
       document.getElementById('legal')!.innerHTML = `<a href="${source}">music</a>, <a href="${textureSource}">textures</a>`;
@@ -47,7 +47,7 @@ async function main() {
   else if (name === 'Helena') {
       const { local, source} = getSong('docu');
       const player = await audio(local);
-      const model = await loadModel('Helena');
+      const model = await loadModel('Helena') as any;
       const { source: textureSource, textures: backgroundTextures} = getTextures('asteroids');
       stage = new ProjectionStage(player, canvas, model, backgroundTextures);
       document.getElementById('legal')!.innerHTML = `<a href="${source}">music</a>, <a href="${textureSource}">textures</a>`;
@@ -55,7 +55,7 @@ async function main() {
   else if (name === 'Sabine') {
       const { local, source} = getSong('lofi');
       const player = await audio(local);
-      const model = await loadModel('Sabine');
+      const model = await loadModel('Sabine') as any;
       const { source: textureSource, textures: backgroundTextures} = getTextures('brown_clouds');
       stage = new DiscoGummyStage(player, canvas, model, backgroundTextures);
       document.getElementById('legal')!.innerHTML = `<a href="${source}">music</a>, <a href="${textureSource}">textures</a>`;
@@ -63,7 +63,7 @@ async function main() {
   else if (name === 'Luis') {
       const { local, source} = getSong('lifelike');
       const player = await audio(local);
-      const model = await loadModel('Luis');
+      const model = await loadModel('Luis') as any;
       const { source: textureSource, textures: backgroundTextures} = getTextures('polluted');
       stage = new CartoonStage(player, canvas, model, backgroundTextures);
       document.getElementById('legal')!.innerHTML = `<a href="${source}">music</a>, <a href="${textureSource}">textures</a>`;
@@ -72,7 +72,7 @@ async function main() {
       // throw Error(`Unknown setup: ${name}`);
         const { local, source} = getSong('lifelike');
         const player = await audio(local);
-        const model = await loadModel('Luis');
+        const model = await loadModel('Luis') as any;
         const { source: textureSource, textures: backgroundTextures} = getTextures('polluted');
         stage = new DiscoGummyStage(player, canvas, model, backgroundTextures);
         document.getElementById('legal')!.innerHTML = `<a href="${source}">music</a>, <a href="${textureSource}">textures</a>`;
