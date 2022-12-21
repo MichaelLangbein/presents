@@ -76,7 +76,7 @@ async function main() {
     const { local, source} = getSong('lifelike');
     const player = await audio(local);
     const model = await loadModel(name) as any;
-    const { source: textureSource, textures: backgroundTextures} = getTextures('nebulae');
+    const { source: textureSource, textures: backgroundTextures} = getTextures('polluted');
     stage = new ElectricEelStage(player, canvas, model, backgroundTextures);
     document.getElementById('legal')!.innerHTML = `<a href="${source}">music</a>, <a href="${textureSource}">textures</a>`;
   }
