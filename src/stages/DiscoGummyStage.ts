@@ -2,7 +2,7 @@ import { hsl } from "d3-color";
 import { BufferGeometry, AmbientLight, PointLight, Vector2,
   Material, Mesh, MeshPhongMaterial, Color, PlaneGeometry,
   ShaderMaterial, CustomBlending, SrcColorFactor, MaxEquation,
-  SrcAlphaSaturateFactor, Texture,
+  SrcAlphaSaturateFactor, Texture, Vector3,
 } from "three";
 import { UnrealBloomPass } from "three/examples/jsm/postprocessing/UnrealBloomPass";
 import { SoundMgmt } from "../utils/Sound";
@@ -38,9 +38,10 @@ export class DiscoGummyStage extends Stage {
         transparent: true,
       })
     );
-    this.scene.add(model2);
+    this.model.add(model2);
     model2.position.set(0, 0, 0);
-    model2.lookAt(this.camera.position);
+    // model2.lookAt(this.camera.position);
+    model2.lookAt(new Vector3(0, 0, -1));
 
     const background = new Mesh(
       new PlaneGeometry(45, 45, 2, 2),
@@ -178,8 +179,6 @@ export class DiscoGummyStage extends Stage {
       );
 
       this.background.material.uniforms.uTime.value = 0.0001 * i * (1000 / 30);
-
-      this.model2.rotateY(0.001);
     });
   }
 }

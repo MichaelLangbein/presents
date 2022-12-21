@@ -8,7 +8,7 @@ export function getBase() {
 }
 
 export async function loadModel(
-  name: "Andreas" | "Helena" | "Sabine" | "Luis"
+  name: "Andreas" | "Helena" | "Sabine" | "Luis" | "Nicole" | "Julian" | "Jana" | "Joschka" | "Inge" | "Lucia"
 ) {
   const base = getBase();
 
@@ -33,6 +33,31 @@ export async function loadModel(
       const gl = await loader.loadAsync(`${base}/models/luis.glb`);
       const ml = gl.scene.children[0] as Mesh<BufferGeometry, Material>;
       return ml;
+    case "Nicole":
+      const gn = await loader.loadAsync(`${base}/models/nicole.glb`);
+      const mn = gn.scene.children[0] as Mesh<BufferGeometry, Material>;
+      return mn;    
+    case "Julian":
+      const gj = await loader.loadAsync(`${base}/models/julian.glb`);
+      const mj = gj.scene.children[0] as Mesh<BufferGeometry, Material>;
+      return mj;    
+    case "Jana":
+      const gja = await loader.loadAsync(`${base}/models/jana.glb`);
+      const mja = gja.scene.children[0] as Mesh<BufferGeometry, Material>;
+      return mja;    
+    case "Joschka":
+      const gjo = await loader.loadAsync(`${base}/models/joschka.glb`);
+      // @ts-ignore
+      const mjo = gjo.scene;
+      return mjo;
+    case "Inge":
+      const gi = await loader.loadAsync(`${base}/models/inge.glb`);
+      const mi = gi.scene.children[0] as Mesh<BufferGeometry, Material>;
+      return mi;
+    case "Lucia":
+      const glu = await loader.loadAsync(`${base}/models/lucia.glb`);
+      const mlu = glu.scene.children[0] as Mesh<BufferGeometry, Material>;
+      return mlu;
     default:
       throw new Error(`Unknown model: ${name}`);
   }
@@ -120,12 +145,12 @@ export function getTextures(
       return { 
         source: 'https://opengameart.org/content/xonotic-skyboxes',
         textures: [
-        `${base}/textures/sunset/sunset_ft.jpg`,
-        `${base}/textures/sunset/sunset_bk.jpg`,
-        `${base}/textures/sunset/sunset_up.jpg`,
-        `${base}/textures/sunset/sunset_dn.jpg`,
-        `${base}/textures/sunset/sunset_rt.jpg`,
-        `${base}/textures/sunset/sunset_lf.jpg`,
+        `${base}/textures/sunset/distant_sunset_ft.jpg`,
+        `${base}/textures/sunset/distant_sunset_bk.jpg`,
+        `${base}/textures/sunset/distant_sunset_up.jpg`,
+        `${base}/textures/sunset/distant_sunset_dn.jpg`,
+        `${base}/textures/sunset/distant_sunset_rt.jpg`,
+        `${base}/textures/sunset/distant_sunset_lf.jpg`,
       ]};
     default:
       throw new Error(`Unknown textures: ${name}`);

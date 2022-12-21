@@ -137,11 +137,22 @@ export class PixelStage extends Stage {
     }
 
     loop(onLoop?: ((i: number) => void) | undefined): void {
+        const amplitudes: number[] = []
+
         super.loop((i) => {
 
             const t = i * (30 / 1000);
             const color = hsl(i % 360, 1, 0.5).rgb();
+
             const amplitude = this.player.getCurrentAmplitude();
+            if (amplitude) {
+              amplitudes.push(Math.abs(amplitude));
+            }
+            if (amplitudes.length > 100) {
+              amplitudes.shift();
+            }
+            const meanAmplitude = amplitudes.reduce((c, v) => c + v, 0) / amplitudes.length;
+            
             this.background.material.uniforms.uTime.value = t;
             this.background.material.uniforms.uColor.value = [color.r / 256, color.g / 256, color.b / 256];
             const radius = 5.0;
@@ -152,7 +163,7 @@ export class PixelStage extends Stage {
             this.light.position.set(x, 0, z);
             this.light.lookAt(this.model.position);
             this.light.color.set(new Color(color.formatHex()));
-            this.light.intensity = amplitude;
+            this.light.intensity = meanAmplitude;
         });
     }
 }
