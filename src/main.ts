@@ -6,7 +6,6 @@ import { ElectricEelStage } from "./stages/ElectricEelStage";
 import { CartoonStage } from "./stages/CartoonStage";
 import { Stage } from "./stages/Stage";
 import "./style.css";
-import { PixelFormat } from "three";
 import { PixelStage } from "./stages/PixelStage";
 
 
