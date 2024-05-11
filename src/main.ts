@@ -393,7 +393,7 @@ async function estelle(canvas: HTMLCanvasElement) {
   canvas.height = 700;
   const gl = canvas.getContext('webgl2')!;
 
-  const video = await VideoTexture.loadVideo('/estelle.mp4');
+  const video = await VideoTexture.loadVideo('https://michaellangbein.github.io/presents/estelle.mp4');
   video.playbackRate = 0.85;
   const spv = new SdfParticleVideo(gl, { sdfVideo: video, nrParticles: 20000 });
 
